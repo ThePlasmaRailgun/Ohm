@@ -18,6 +18,26 @@ Ohm uses a stack memory model. Think of the stack as a big array that every comp
 
 (The numbers have to be separated with a no-op (space, in this case) since Ohm continues parsing number literals until there are no more digits left.)
 
+### Blocks
+Conditional statements and loops in Ohm are handled by a construct called a _block_. (If you're familiar with Ruby, it's pretty similar to Ruby's blocks.) They're essentially sections of code that are executed differently depending on what component they're attached to. Some components that use them are `?` for if statements, `:` for for-each loops, `⁇` for array select/filtering, and `€` for array mapping.
+
+#### If/Else
+If you want to add an `else` clause to an if statement, just place the `¿` component before the end of the block and put the alternate code in between the two.
+
+##### Example
+```
+0?"code for truthy condition"¿"code for falsy condition";
+```
+
+#### Auto-Pushing
+Most array-looping components like `€`, `⁇`, and `‼` will automatically push the current value to the top of the stack, meaning that `_` does not have to be explicitly called to get the value. **There is one exception to this: the `:` (foreach) component**. Because of the different use cases for `:`, the value is not automatically pushed and has to be explicitly pushed via `_`.
+
+##### Example
+```
+5@€^*;  Creates a new array with every element multiplied by its index
+5@:_,;  Prints each element in the array
+```
+
 ### Implicit Everything
 Since Ohm is a golfing language, many things are done implicitly in order to save bytes for the golfer.
 - If there is nothing else in the circuit, concluding components like `;` in conditional/loop blocks and `"` in string literals are inferred and do not have to be explicitly input.
@@ -40,8 +60,11 @@ The `Ω` component will execute the wire below the current one, whereas `Θ` wil
 
 As you can see, it saves bytes by only requiring the `:` block to be declared once.
 
+### Base 255
+The `B` component can handle input bases up to 255. Because of how efficient base 255 is at storing numbers, Ohm comes with a built-in to convert base 255 back to base 10 for use in a circuit. Just surround the base 255 number with `“`. ([Here's a base 255 conversion script](https://tio.run/##y8/INfr/39PI1NTp/38LM3NTYwNLAA) for your convenience.)
+
 ### String Compression
-Ohm uses a slightly-modified version of the [Smaz](https://github.com/antirez/smaz) compression library. Inside Ohm circuits, compressed string literals are delimited by `”` characters. In order to generate a compressed string, use the `Ohm::Smaz.compress` method.
+Ohm uses a slightly-modified version of the [Smaz](https://github.com/antirez/smaz) compression library. Inside Ohm circuits, compressed string literals are delimited by `”` characters. In order to generate a compressed string, use the `Ohm::Smaz.compress` method or the `·c` component in a circuit.
 
 ## What's New?
 The release of Ohm v2 brought a few new changes, namely:
@@ -50,7 +73,9 @@ The release of Ohm v2 brought a few new changes, namely:
 - Network access is now made possible with `·G`, but safe mode will disable it.
 
 ## Running
-The Ohm interpreter is written in Ruby 2.x (tested on >= 2.2.8). The core interpreter relies on [RSmaz](https://github.com/peterc/rsmaz) for string compression and [Ruby/GSL](https://github.com/SciRuby/rb-gsl) for polynomial solving, and the unit tests rely on [RSpec](http://rspec.info/) and [rake](https://github.com/ruby/rake).
+The Ohm interpreter is written in Ruby 2.x (tested on >= 2.2.8). The core interpreter relies on [RSmaz](https://github.com/peterc/rsmaz) for string compression and [Ruby/GSL](https://github.com/SciRuby/rb-gsl) for polynomial solving, and the unit tests rely on [RSpec](http://rspec.info/), [Timecop](https://github.com/travisjeffery/timecop), and [Rake](https://github.com/ruby/rake).
+
+To install dependencies for *normal use*, run `bundle install --without test`. To install unit testing dependencies, run `bundle install` normally.
 
 ### Tests
 To run unit tests, run `rake`.
@@ -68,3 +93,8 @@ To run unit tests, run `rake`.
 
 ## Troubleshooting
 When using the `-e` flag for executing from the terminal, make sure your terminal is in **UTF-8** mode. This can be achieved on Windows with the command `chcp 65001`. If the terminal is in the incorrect encoding, Ruby will raise an `Encoding::CompatibilityError` when trying to use non-ASCII characters (in my experience).
+
+## TODO
+- Change wire splitting from regex to a small parser thing
+- Start using [BigDecimal](https://ruby-doc.org/stdlib-2.4.2/libdoc/bigdecimal/rdoc/BigDecimal.html) for arbitrary precision calculations instead of limiting precision with Ruby `Float` (see [#8](https://github.com/nickbclifford/Ohm/issues/8))
+- Possibly add hashing functions (see [#9](https://github.com/nickbclifford/Ohm/issues/9))

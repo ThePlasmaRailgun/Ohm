@@ -322,9 +322,9 @@ class Ohm
 
     def subarray_index(haystack, needle)
       haystack.each_index do |i|
-        return 1 + i if haystack[i...i + needle.length] == needle
+        return i if haystack[i...i + needle.length] == needle
       end
-      0
+      -1
     end
 
     def sub_ohm(circuit, **in_opts)
@@ -367,7 +367,7 @@ class Ohm
     end
 
     def untyped_to_s(n)
-      n.is_a?(Numeric) ? format("%.#{n.to_s.length}g", n) : n.to_s
+      n.is_a?(Float) ? format("%.#{n.to_s.length}g", n) : n.to_s
     end
 
     def zip_arr(mat)
